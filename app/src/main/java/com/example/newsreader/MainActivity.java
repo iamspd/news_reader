@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         articleDB = this.openOrCreateDatabase("Article", MODE_PRIVATE, null);
         articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles " +
-                "(id INT PRIMARY KEY, articleId INT, title VARCHAR, url)");
+                "(id INT PRIMARY KEY, articleId INT, title VARCHAR, content VARCHAR)");
 
         DownloadTask downloadTask = new DownloadTask();
         downloadTask.execute("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
@@ -81,6 +81,8 @@ public class MainActivity extends AppCompatActivity {
                 if (newsIdJsonArray.length() < 20) {
                     totalCount = newsIdJsonArray.length();
                 }
+
+                articleDB.execSQL("DELETE FROM articles");
 
                 for (int i = 0; i < totalCount; i++) {
                    // Log.i("ArrayItems", newsIdJsonArray.getString(i));
@@ -129,12 +131,12 @@ public class MainActivity extends AppCompatActivity {
 
                         Log.i("info", articleInfo.toString());
 
-                        String sql = "INSERT INTO articles (articleId, title, url) VALUES (?, ?, ?)";
+                        String sql = "INSERT INTO articles (articleId, title, content) VALUES (?, ?, ?)";
 
                         SQLiteStatement sqLiteStatement = articleDB.compileStatement(sql);
                         sqLiteStatement.bindString(1, newsItemId);
                         sqLiteStatement.bindString(2, articleTitle);
-                        sqLiteStatement.bindString(3, articleURL);
+                        sqLiteStatement.bindString(3, articleInfo.toString());
 
                         sqLiteStatement.execute();
                     }
