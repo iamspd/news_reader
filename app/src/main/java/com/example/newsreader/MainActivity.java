@@ -3,6 +3,7 @@ package com.example.newsreader;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.content.AsyncTaskLoader;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
@@ -28,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
     // variables
     private ListView mNewsList;
     private AsyncTask asyncTask;
-    private ArrayList<String> newsArrayList;
+    private ArrayList<String> newsArrayList = new ArrayList<>();
+    private ArrayList<String> contentArrayList = new ArrayList<>();
     private ArrayAdapter newsAdapter;
     private SQLiteDatabase articleDB;
 
@@ -37,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        newsArrayList = new ArrayList<>();
         mNewsList = findViewById(R.id.lvNewsHeadlines);
 
         newsAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, newsArrayList);
@@ -47,8 +48,31 @@ public class MainActivity extends AppCompatActivity {
         articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles " +
                 "(id INT PRIMARY KEY, articleId INT, title VARCHAR, content VARCHAR)");
 
+        updateListView();
+
         DownloadTask downloadTask = new DownloadTask();
         downloadTask.execute("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
+    }
+
+    public void updateListView() {
+
+        Cursor c = articleDB.rawQuery("SELECT * FROM articles", null);
+
+        int titleIndex = c.getColumnIndex("title");
+        int contentIndex = c.getColumnIndex("content");
+
+        if (c.moveToFirst()) {
+            newsArrayList.clear();
+            contentArrayList.clear();
+
+            do {
+                newsArrayList.add(c.getString(titleIndex));
+                contentArrayList.add(c.getString(contentIndex));
+            } while (c.moveToNext());
+
+            newsAdapter.notifyDataSetChanged();
+        }
+
     }
 
     public class DownloadTask extends AsyncTask<String, Void, String> {
@@ -72,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                     result += current;
                     data = inputStreamReader.read();
                 }
-               /* Log.i("News", result);*/
+                /* Log.i("News", result);*/
 
                 JSONArray newsIdJsonArray = new JSONArray(result);
 
@@ -85,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 articleDB.execSQL("DELETE FROM articles");
 
                 for (int i = 0; i < totalCount; i++) {
-                   // Log.i("ArrayItems", newsIdJsonArray.getString(i));
+                    // Log.i("ArrayItems", newsIdJsonArray.getString(i));
 
                     String newsItemId = newsIdJsonArray.getString(i);
 
@@ -148,6 +172,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            updateListView();
         }
     }
 }
