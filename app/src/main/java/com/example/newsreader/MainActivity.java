@@ -3,6 +3,7 @@ package com.example.newsreader;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.content.AsyncTaskLoader;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private AsyncTask asyncTask;
     private ArrayList<String> newsArrayList;
     private ArrayAdapter newsAdapter;
+    private SQLiteDatabase articleDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
 
         newsAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, newsArrayList);
         mNewsList.setAdapter(newsAdapter);
+
+        articleDB = this.openOrCreateDatabase("Article", MODE_PRIVATE, null);
+        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles " +
+                "(id INT PRIMARY KEY, articleId INT, title VARCHAR, url)");
 
         DownloadTask downloadTask = new DownloadTask();
         downloadTask.execute("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
