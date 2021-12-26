@@ -2,6 +2,7 @@ package com.example.newsreader;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -20,5 +21,10 @@ public class ArticleActivity extends AppCompatActivity {
 
         articleWebView.getSettings().setJavaScriptEnabled(true);
         articleWebView.setWebViewClient(new WebViewClient());
+
+        Intent intent = getIntent();
+        String html = intent.getStringExtra("content");
+
+        articleWebView.loadData(html, "text/html", "UTF-8");
     }
 }
