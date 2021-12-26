@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.loader.content.AsyncTaskLoader;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -127,6 +128,15 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         Log.i("info", articleInfo.toString());
+
+                        String sql = "INSERT INTO articles (articleId, title, url) VALUES (?, ?, ?)";
+
+                        SQLiteStatement sqLiteStatement = articleDB.compileStatement(sql);
+                        sqLiteStatement.bindString(1, newsItemId);
+                        sqLiteStatement.bindString(2, articleTitle);
+                        sqLiteStatement.bindString(3, articleURL);
+
+                        sqLiteStatement.execute();
                     }
 
                 }
